@@ -1,0 +1,15 @@
+node_modules
+npm-debug.log*
+.env
+.DS_Store
+
+# Build outputs
+dist
+coverage
+.next
+out
+
+# Local env files
+*.local
+apps/api/.env
+apps/web/.env
