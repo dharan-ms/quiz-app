@@ -1,0 +1,35 @@
+{
+  "name": "quiz-platform",
+  "version": "1.0.0",
+  "description": "this is quiz website",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test --workspace @quiz/api && npm run test --workspace @quiz/web",
+    "dev": "concurrently \"npm run dev --workspace @quiz/api\" \"npm run dev --workspace @quiz/web\"",
+    "dev:api": "npm run dev --workspace @quiz/api",
+    "dev:web": "npm run dev --workspace @quiz/web",
+    "build": "npm run build --workspace @quiz/api && npm run build --workspace @quiz/web",
+    "lint": "npm run lint --workspace @quiz/web",
+    "db:push": "npm run db:push --workspace @quiz/api",
+    "db:seed": "npm run db:seed --workspace @quiz/api"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dharan-ms/quiz-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dharan-ms/quiz-app/issues"
+  },
+  "homepage": "https://github.com/dharan-ms/quiz-app#readme",
+  "private": true,
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

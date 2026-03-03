@@ -1,0 +1,130 @@
+{
+  "info": {
+    "name": "QuizForge API",
+    "_postman_id": "f2f29be6-9f65-4f89-a5ad-quizforge",
+    "description": "Postman collection for QuizForge REST API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000/api/v1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman User\",\n  \"email\": \"postman.user@example.com\",\n  \"password\": \"StrongPass1\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@quizapp.com\",\n  \"password\": \"Admin@12345\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/me"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Quizzes & Attempts",
+      "item": [
+        {
+          "name": "List Quizzes",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/quizzes?page=1&limit=20"
+          }
+        },
+        {
+          "name": "Get Quiz by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/quizzes/sample-quiz-001"
+          }
+        },
+        {
+          "name": "Start Quiz",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/quizzes/sample-quiz-001/start"
+          }
+        },
+        {
+          "name": "Submit Attempt",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/attempts/{{attemptId}}/submit",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"autoSubmit\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Attempt Result",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/attempts/{{attemptId}}/result"
+          }
+        },
+        {
+          "name": "My Attempts",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/users/me/attempts?page=1&limit=10"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Admin Analytics",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/analytics"
+          }
+        },
+        {
+          "name": "Admin List Quizzes",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/admin/quizzes"
+          }
+        }
+      ]
+    }
+  ]
+}
