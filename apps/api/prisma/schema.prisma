@@ -1,0 +1,210 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum QuestionType {
+  MCQ
+  TRUE_FALSE
+  FILL_BLANK
+}
+
+enum AttemptStatus {
+  STARTED
+  IN_PROGRESS
+  SUBMITTED
+  AUTO_SUBMITTED
+}
+
+model User {
+  id                  String               @id @default(uuid())
+  email               String               @unique
+  passwordHash        String
+  name                String
+  role                Role                 @default(USER)
+  isActive            Boolean              @default(true)
+  emailVerified       Boolean              @default(false)
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  deletedAt           DateTime?
+  quizzesCreated      Quiz[]               @relation("QuizCreator")
+  attempts            Attempt[]
+  leaderboardEntries  LeaderboardEntry[]
+  auditLogs           AuditLog[]           @relation("AdminLogs")
+  passwordResetTokens PasswordResetToken[]
+}
+
+model Category {
+  id        String         @id @default(uuid())
+  name      String         @unique
+  slug      String         @unique
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  quizzes   QuizCategory[]
+}
+
+model Quiz {
+  id              String             @id @default(uuid())
+  title           String
+  description     String
+  instructions    String?
+  difficulty      Difficulty
+  totalMarks      Int                @default(0)
+  durationSeconds Int
+  published       Boolean            @default(false)
+  shuffleQuestions Boolean           @default(false)
+  shuffleOptions  Boolean            @default(false)
+  availableFrom   DateTime?
+  availableTo     DateTime?
+  createdById     String
+  createdBy       User               @relation("QuizCreator", fields: [createdById], references: [id])
+  questions       Question[]
+  attempts        Attempt[]
+  categories      QuizCategory[]
+  leaderboardEntries LeaderboardEntry[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  deletedAt       DateTime?
+
+  @@index([published, availableFrom, availableTo])
+  @@index([difficulty])
+}
+
+model QuizCategory {
+  quizId     String
+  categoryId String
+  assignedAt DateTime @default(now())
+  quiz       Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([quizId, categoryId])
+}
+
+model Question {
+  id             String          @id @default(uuid())
+  quizId         String
+  type           QuestionType
+  text           String
+  explanation    String?
+  points         Int             @default(1)
+  negativeMarks  Float           @default(0)
+  order          Int
+  imageUrl       String?
+  acceptedAnswers String[]       @default([])
+  quiz           Quiz            @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  choices        Choice[]
+  attemptAnswers AttemptAnswer[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([quizId, order])
+}
+
+model Choice {
+  id           String         @id @default(uuid())
+  questionId   String
+  text         String
+  isCorrect    Boolean        @default(false)
+  order        Int
+  createdAt    DateTime       @default(now())
+  question     Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  attemptAnswers AttemptAnswer[]
+
+  @@index([questionId, order])
+}
+
+model Attempt {
+  id              String         @id @default(uuid())
+  userId          String
+  quizId          String
+  status          AttemptStatus  @default(STARTED)
+  startedAt       DateTime       @default(now())
+  submittedAt     DateTime?
+  totalScore      Float?
+  maxScore        Float?
+  percentage      Float?
+  timeSpentSeconds Int?
+  tabSwitchCount  Int            @default(0)
+  questionOrder   String[]       @default([])
+  choiceOrder     Json?
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz            Quiz           @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  attemptAnswers  AttemptAnswer[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([quizId, status])
+}
+
+model AttemptAnswer {
+  id              String    @id @default(uuid())
+  attemptId       String
+  questionId      String
+  selectedChoiceId String?
+  textAnswer      String?
+  isCorrect       Boolean?
+  awardedScore    Float?
+  answeredAt      DateTime  @default(now())
+  attempt         Attempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question        Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedChoice  Choice?   @relation(fields: [selectedChoiceId], references: [id], onDelete: SetNull)
+
+  @@unique([attemptId, questionId])
+  @@index([questionId])
+}
+
+model LeaderboardEntry {
+  id             String   @id @default(uuid())
+  quizId         String
+  userId         String
+  bestScore      Float
+  bestPercentage Float
+  bestTimeSeconds Int
+  lastAttemptAt  DateTime
+  quiz           Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([quizId, userId])
+  @@index([quizId, bestScore(sort: Desc), bestTimeSeconds])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  adminId   String
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  admin     User     @relation("AdminLogs", fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId, createdAt(sort: Desc)])
+  @@index([entity, entityId])
+}
